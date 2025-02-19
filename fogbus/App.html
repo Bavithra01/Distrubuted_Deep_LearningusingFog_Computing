@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthTech AI - Revolutionizing Health Diagnostics</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>HealthTech AI</h1>
+        <div class="tagline">Revolutionizing Health Diagnostics with AI</div>
+    </header>
+
+    <main>
+        <section id="about">
+            <h2>About Us</h2>
+            <p>HealthTech AI is at the forefront of medical technology, leveraging artificial intelligence to provide rapid, accurate health diagnostics. Our cutting-edge solutions empower healthcare professionals and improve patient outcomes.</p>
+        </section>
+
+        <section id="features">
+            <h2>Key Features</h2>
+            <div class="feature">
+                <div class="feature-icon">🧠</div>
+                <div>
+                    <h3>Advanced AI Algorithms</h3>
+                    <p>Our state-of-the-art AI models analyze medical images with unparalleled accuracy.</p>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <div>
+                    <h3>Rapid Results</h3>
+                    <p>Get diagnostic insights in seconds, enabling faster decision-making and treatment.</p>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <div>
+                    <h3>Secure and Compliant</h3>
+                    <p>Your data is safe with us. We adhere to the highest standards of data protection and privacy.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="demo">
+            <h2>Try Our Demo</h2>
+
+            <!-- Form with POST and multipart/form-data -->
+            <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                <label for="masterIP">Server IP:</label>
+                <input type="text" id="masterIP" name="masterIP" placeholder="Enter server IP" required>
+                
+                <label for="imageUpload">Upload Medical Image:</label>
+                <input type="file" id="imageUpload" name="imageUpload" accept="image/*" required>
+                
+                <button type="submit">Analyze Image</button>
+            </form>
+
+            <!-- Response and Metrics -->
+            <div id="result"></div>
+            <div id="rawResponse"></div>
+            <div id="metrics">
+                <h3>Performance Metrics</h3>
+                <div id="latency" class="metric"></div>
+                <div id="jitter" class="metric"></div>
+                <div id="arbiterTime" class="metric"></div>
+                <div id="responseTime" class="metric"></div>
+                <div id="executionTime" class="metric"></div>
+                <div id="totalTime" class="metric"></div>
+            </div>
+            <div id="workSentTo"></div>
+
+            <!-- Button to show graph -->
+            <button id="showGraphButton">Show Graph</button>
+
+            <!-- Chart.js Canvas -->
+            <canvas id="metricsChart" style="display: none;"></canvas>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 HealthTech AI. All rights reserved.</p>
+    </footer>
+
+    <!-- Link to JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
+

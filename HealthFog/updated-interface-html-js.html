@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetic Retinopathy Testing</title>
+</head>
+<body>
+    <h1>Diabetic Retinopathy Testing</h1>
+    
+    <form id="uploadForm">
+        <label for="masterIP">Master IP:</label>
+        <input type="text" id="masterIP" required>
+        <br><br>
+        <label for="imageUpload">Upload Retina Image:</label>
+        <input type="file" id="imageUpload" name="image" accept="image/*" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="result"></div>
+
+    <div id="metrics">
+        <h2>Performance Metrics</h2>
+        <div id="latency" class="metric"></div>
+        <div id="jitter" class="metric"></div>
+        <div id="executionTime" class="metric"></div>
+        <div id="totalTime" class="metric"></div>
+    </div>
+
+    <div id="workSentTo"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData();
+            var fileInput = document.getElementById('imageUpload');
+            formData.append('image', fileInput.files[0]);
+
+            var masterIP = document.getElementById('masterIP').value;
+
+            fetch(`http://${masterIP}/HealthFog/arbiter.php`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Server response:', data);
+                if (data.error) {
+                    document.getElementById('result').innerHTML = 'Error: ' + data.error;
+                } else {
+                    document.getElementById('result').innerHTML = 'Prediction: ' + data.prediction;
+                    document.getElementById('executionTime').innerHTML = 'Execution Time: ' + (data.executionTime || 'Not available') + ' ms';
+                    document.getElementById('totalTime').innerHTML = 'Total Time: '+(data.totalTime || 'Not available') + ' ms';
+                    document.getElementById('workSentTo').innerHTML = 'Work sent to: ' + (data.workerIP || 'Not available');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 'An error occurred. Please try again.';
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style_object.css">
+    <title>Object Detection Demo</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .bounding-box {
+            position: absolute;
+            border: 2px solid red;
+            background-color: rgba(255, 0, 0, 0.2);
+            pointer-events: none;
+        }
+        .label {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            background-color: red;
+            color: white;
+            padding: 2px 5px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        #imageContainer {
+            position: relative;
+            display: inline-block;
+        }
+        #uploadedImage {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Object Detection Demo</h1>
+
+        <div class="ip-input">
+            <label for="masterIP">Master IP:</label>
+            <input type="text" id="masterIP" placeholder="Enter Master IP">
+        </div>
+
+        <div class="upload-container">
+            <div class="control-buttons">
+                <button id="uploadButton">Upload Image</button>
+                <button id="detectButton">Detect Objects</button>
+            </div>
+
+            <div id="loadingIndicator" class="loading" style="display: none;">
+                Processing...
+            </div>
+
+            <div id="errorMessage"></div>
+        </div>
+
+        <div id="imageContainer"></div>
+
+        <div id="resultList"></div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let originalImageSize = { width: 0, height: 0 };
+
+        // Offset factors for fine-tuning (adjust these values as needed)
+        const OFFSET_X = -0.15; // Moves boxes to the right
+        const OFFSET_Y = -0.12; // Moves boxes down
+
+        document.getElementById('uploadButton').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (event) => {
+                selectedFile = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = function() {
+                        originalImageSize.width = this.width;
+                        originalImageSize.height = this.height;
+                        
+                        const displayImg = document.createElement('img');
+                        displayImg.src = e.target.result;
+                        displayImg.id = 'uploadedImage';
+                        const container = document.getElementById('imageContainer');
+                        container.innerHTML = '';
+                        container.appendChild(displayImg);
+                        document.getElementById('detectButton').style.display = 'inline-block';
+                    }
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(selectedFile);
+            };
+            input.click();
+        });
+
+        document.getElementById('detectButton').addEventListener('click', async () => {
+            if (!selectedFile) {
+                showError('Please upload an image first.');
+                return;
+            }
+
+            const masterIP = document.getElementById('masterIP').value;
+            if (!masterIP) {
+                showError('Please enter the Master IP.');
+                return;
+            }
+
+            showLoading(true);
+            clearError();
+
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+
+            try {
+                const response = await fetch(`http://${masterIP}/ObjectFog/arbiter.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log(result);
+                displayResults(result);
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        function displayResults(result) {
+            if (!result || !result.predictions || !Array.isArray(result.predictions)) {
+                console.error('Invalid result format:', result);
+                showError('Invalid response format');
+                return;
+            }
+
+            const predictions = result.predictions;
+            const container = document.getElementById('imageContainer');
+            const img = document.getElementById('uploadedImage');
+            const imgRect = img.getBoundingClientRect();
+
+            // Calculate scale factors
+            const scaleX = imgRect.width / originalImageSize.width;
+            const scaleY = imgRect.height / originalImageSize.height;
+
+            // Clear previous results
+            container.querySelectorAll('.bounding-box').forEach(box => box.remove());
+
+            predictions.forEach(prediction => {
+                const box = document.createElement('div');
+                box.className = 'bounding-box';
+                
+                // Adjust the positioning with offset factors
+                const left = prediction.x + (originalImageSize.width * OFFSET_X)
+                const top = prediction.y + (originalImageSize.height * OFFSET_Y)
+                
+		  
+                box.style.left = `${left * scaleX}px`;
+                box.style.top = `${top * scaleY}px`;
+                box.style.width = `${prediction.width * scaleX}px`;
+                box.style.height = `${prediction.height * scaleY}px`;
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `${prediction.class} (${(prediction.confidence * 100).toFixed(2)}%)`;
+
+                box.appendChild(label);
+                container.appendChild(box);
+            });
+
+            const resultList = document.getElementById('resultList');
+            resultList.innerHTML = `<h3>Detected Objects (Total Time: ${result.totalTime.toFixed(2)}ms):</h3>`;
+            const ul = document.createElement('ul');
+            predictions.forEach(prediction => {
+                const li = document.createElement('li');
+                li.textContent = `${prediction.class}: ${(prediction.confidence * 100).toFixed(2)}% confidence`;
+                ul.appendChild(li);
+            });
+            resultList.appendChild(ul);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearError() {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

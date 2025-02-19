@@ -1,0 +1,85 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Finalcss.css">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">INTELLI DETECT</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#demo">Demo</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>AI Solution for Smarter Image Analysis and Detection </h1>
+                <p>Unlock the power of AI for image classification, object detection, and performance insights. Automate visual analysis, streamline processes, and gain actionable metrics—all in one place </p>
+		<br/>
+                <a href="#demo" class="cta-button">Experience AI Classification</a>
+		<br/>
+		<br/>
+        <div class="container">
+            <a href="ObjectFog/object_final.html" class="cta-button">Object Detection Demo</a>
+        </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Cutting-Edge Features</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3>Deep Learning Models</h3>
+                        <p>Our AI utilizes state-of-the-art neural networks.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Real-time Analysis</h3>
+                        <p>Get instant insights with our high-performance, low-latency processing engine.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>HIPAA Compliant</h3>
+                        <p>Enterprise-grade security ensures your data is protected at every step.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="demo" class="demo">
+            <div class="container">
+                <h2>Vision AI Demo</h2>
+                <form id="demoForm" class="demo-form">
+                    <input type="text" id="serverIP" placeholder="Enter Server IP" required>
+                    <input type="file" id="imageUpload" accept="image/*" required>
+                    <button type="submit">Analyze Image</button>
+                </form>
+                <div id="result" class="result"></div>
+                <div id="chartContainer" class="chart-container">
+                    <canvas id="metricsChart" style="background-color:white"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 HealthTech AI. Empowering healthcare with artificial intelligence.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="mainscript.js"></script>
+</body>
+</html>
+

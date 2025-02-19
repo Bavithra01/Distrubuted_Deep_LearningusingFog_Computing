@@ -1,0 +1,163 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('uploadForm');
+    const resultDiv = document.getElementById('result');
+    const metricsDiv = document.getElementById('metricsContent');
+    const workSentToDiv = document.getElementById('workSentTo');
+    const showGraphButton = document.getElementById('showGraphButton');
+    const metricsChart = document.getElementById('metricsChart');
+
+    if (!form || !resultDiv || !metricsDiv || !workSentToDiv || !showGraphButton || !metricsChart) {
+        console.error('One or more required elements are missing from the DOM');
+        return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const masterIP = document.getElementById('masterIP').value;
+        const startTime = performance.now();
+
+        try {
+            const response = await fetch(`http://${masterIP}/HealthFog/arbiter.php`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const text = await response.text();
+            const responseTime = performance.now() - startTime;
+
+            try {
+                const data = JSON.parse(text);
+                console.log('Server response:', data);
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="success">Prediction: ${data.prediction}</p>`;
+                    displayMetrics(data, responseTime);
+                    workSentToDiv.innerHTML = `<p>Work sent to: ${data.workerIP || 'Not available'}</p>`;
+                    window.metricsData = prepareMetricsData(data, responseTime);
+                    showGraphButton.style.display = 'block';
+                }
+            } catch (e) {
+                resultDiv.innerHTML = '<p class="error">An error occurred while processing the response. Please try again.</p>';
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            resultDiv.innerHTML = '<p class="error">A network or server error occurred. Please try again.</p>';
+        }
+    });
+
+    showGraphButton.addEventListener('click', () => {
+        if (window.metricsData) {
+            createChart(window.metricsData);
+        } else {
+            alert('No metrics data available to display. Please submit an image first.');
+        }
+    });
+
+    function displayMetrics(data, responseTime) {
+        const jitter = Math.abs(data.totalTime - responseTime).toFixed(2);
+        const metrics = [
+            { label: 'Latency', value: `${responseTime.toFixed(2)} ms` },
+            { label: 'Jitter', value: `${jitter} ms` },
+            { label: 'Arbiter Time', value: `${data.arbiter_time || 'Not available'} ms` },
+            { label: 'Execution Time', value: `${data.executionTime || 'Not available'} ms` },
+            { label: 'Total Time', value: `${data.totalTime || 'Not available'} ms` }
+        ];
+
+        metricsDiv.innerHTML = metrics.map(metric => 
+            `<p><strong>${metric.label}:</strong> ${metric.value}</p>`
+        ).join('');
+    }
+
+    function prepareMetricsData(data, responseTime) {
+        const jitter = Math.abs(data.totalTime - responseTime).toFixed(2);
+        return {
+            labels: ['Latency', 'Jitter', 'Arbiter Time', 'Execution Time', 'Total Time'],
+            datasets: [{
+                label: 'Time (ms)',
+                data: [
+                    responseTime,
+                    parseFloat(jitter),
+                    data.arbiter_time || 0,
+                    data.executionTime || 0,
+                    data.totalTime || 0
+                ],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(153, 102, 255, 1)',
+                ],
+                borderWidth: 1
+            }]
+        };
+    }
+
+    function createChart(data) {
+        if (window.metricsChartInstance) {
+            window.metricsChartInstance.destroy();
+        }
+
+        const ctx = metricsChart.getContext('2d');
+        window.metricsChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Time (ms)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Performance Metrics'
+                    }
+                }
+            }
+        });
+    }
+
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // Add animation to features on scroll
+    const features = document.querySelectorAll('.feature');
+    const animateFeatures = () => {
+        const triggerBottom = window.innerHeight / 5 * 4;
+        features.forEach(feature => {
+            const featureTop = feature.getBoundingClientRect().top;
+            if (featureTop < triggerBottom) {
+                feature.classList.add('animate');
+            }
+        });
+    };
+
+    window.addEventListener('scroll', animateFeatures);
+});

@@ -21,4 +21,4 @@ Follow these steps in master node:
 1. Update <i>config.txt</i> with IP addresses of all worker nodes (each in a new line) after the first line of 'EnableMaster DisableAneka'. 
 2. If connected to cloud using VPN add cloud virtual IP, otherwise add public IP addresses in <i>cloud.txt</i> (each in a new line).
 
-Now download and install <i>Android/FastHeartTest.apk</i> in an android device and enter master IP address to begin healthcare analysis!
+
